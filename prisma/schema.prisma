@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id        Int              @id @default(autoincrement())
+  sallaId   String?          @unique
+  createdAt DateTime         @default(now())
+  offers    Offer[]
+  events    AnalyticsEvent[]
+}
+
+model Offer {
+  id        Int       @id @default(autoincrement())
+  storeId   Int
+  store     Store     @relation(fields: [storeId], references: [id])
+  name      String
+  type      String    // quantityDiscount | addOnProducts | bundle
+  data      Json
+  active    Boolean   @default(true)
+  startAt   DateTime?
+  endAt     DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([storeId])
+  @@index([active])
+  @@index([type])
+}
+
+model AnalyticsEvent {
+  id        Int      @id @default(autoincrement())
+  storeId   Int
+  store     Store    @relation(fields: [storeId], references: [id])
+  type      String   // visitors | widget_open | add_to_cart | orders | etc
+  count     Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@index([storeId, type, createdAt])
+}
